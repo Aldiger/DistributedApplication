@@ -20,8 +20,10 @@ namespace Worker
             try
             {
                 while(true){
+
                     Thread.Sleep(200);
                     await _voteService.Process();
+                
                 }
 
             }

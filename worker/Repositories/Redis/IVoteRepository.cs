@@ -15,19 +15,22 @@ public interface IVoteRepository{
 }
 public class VoteRepository : IVoteRepository
 {
-    private readonly ConnectionMultiplexer _connection;
+
+    private ConnectionMultiplexer _connection;
     private readonly AppsettingsDto _appsettings;
+    private const string _hostname = "127.0.0.1:6379";//GetIp(_appsettings.RedisConnectionString)
+
     public VoteRepository(IConfiguration configuration)
     {
         _appsettings = configuration.Get<AppsettingsDto>();
-        OpenConnection(GetIp(_appsettings.RedisConnectionString));
+        _connection = OpenConnection(_hostname);
     }
     public async Task<Vote> RetrieveVote()
     {
 
         if (_connection == null || !_connection.IsConnected)
         {
-            OpenConnection(GetIp(_appsettings.RedisConnectionString));
+            _connection = OpenConnection(_hostname);
         }
 
         var db = _connection.GetDatabase();
@@ -41,7 +44,8 @@ public class VoteRepository : IVoteRepository
     private static ConnectionMultiplexer OpenConnection(string hostname)
     {
         // Use IP address to workaround https://github.com/StackExchange/StackExchange.Redis/issues/410
-        var ipAddress = GetIp(hostname);
+        //var ipAddress = GetIp(hostname);
+        var ipAddress = _hostname;
         Console.WriteLine($"Found redis at {ipAddress}");
 
         while (true)
