@@ -4,3 +4,4 @@
 /worker/bin
 /worker.Tests/bin
 /worker.Tests/obj
+/result/node_modules

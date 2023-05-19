@@ -15,11 +15,39 @@ services:
     volumes:
       - ./vote:/app
     ports:
-      - "5005:80"
-    # networks:
-    #   - front-tier
-    #   - back-tier
-  
+      - "5000:80"
+    networks:
+      - front-tier
+      - back-tier
+
+  worker:
+    build:
+      context: ./worker
+    depends_on:
+      redis:
+        condition: service_healthy 
+      db:
+        condition: service_healthy 
+    networks:
+      - back-tier
+
+
+  result:
+    build: ./result
+    # use nodemon rather than node for local dev
+    entrypoint: nodemon server.js
+    depends_on:
+      db:
+        condition: service_healthy 
+    volumes:
+      - ./result:/app
+    ports:
+      - "5001:80"
+      - "5858:5858"
+    networks:
+      - front-tier
+      - back-tier
+
   redis:
     image: redis:alpine
     volumes:
@@ -27,8 +55,8 @@ services:
     healthcheck:
       test: /healthchecks/redis.sh
       interval: 5s
-    # networks:
-    #   - back-tier
+    networks:
+      - back-tier
     ports:
       - 6379:6379
 
@@ -38,8 +66,8 @@ services:
       - 8081:8081
     environment:
       - REDIS_HOSTS=local:redis:6379
-    # networks:
-    #   - back-tier
+    networks:
+      - back-tier
 
   db:
     image: postgres:15-alpine
@@ -57,8 +85,8 @@ services:
     expose:
       - 5432
 
-    # networks:
-    #   - back-tier
+    networks:
+      - back-tier
 
 volumes:
   db-data:
